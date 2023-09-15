@@ -28,6 +28,13 @@ DigitalOut drl(DRL_EN);
 
 void signalFlashHandler() {
     // Change lights based on can information
+
+    // if left turn signal is true, then leftTurnSignal = 1
+    // if right turn signal is true, then rightTurnSignal = 1
+    if (flashLSignal) {
+        leftTurnSignal = !leftTurnSignal;
+        rightTurnSignal = false;
+    }
 }
 
 AnalogIn fan_tach(FanTach);
@@ -38,6 +45,7 @@ AnalogIn left_turn_current(LEFT_TURN_CURRENT);
 AnalogIn right_turn_current(RIGHT_TURN_CURRENT);
 
 int main() {
+    dro = 0;
     log_set_level(LOG_LEVEL);
     log_debug("Start main()");
 
