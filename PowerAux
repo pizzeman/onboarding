@@ -27,18 +27,25 @@ DigitalOut bms_strobe(BMS_STROBE_EN);
 DigitalOut drl(DRL_EN);
 
 void signalFlashHandler() {
-    // Change lights based on can information    
+
+    // Wait until flag has been raised
+    signalFlashThread.flags_wait_all(0x1)
+
+    // Change lights based on CAN information    
     if (flashLSignal) {
         leftTurnSignal = !leftTurnSignal;
         rightTurnSignal = false;
     }
-    else if (flashRSignal) {
+    if (flashRSignal) {
         rightTurnSignal = !rightTurnSignal;
         leftTurnSignal = false;
     }
-    else if (flashHazards) {
+    if (flashHazards) {
         rightTurnSignal = !rightTurnSignal;
         leftTurnSignal = !leftTurnSignal;
+    }
+    if (flashBrakeLights) {
+        brake_lights = !brake_lights;
     }
 }
 
@@ -66,12 +73,14 @@ int main() {
 // Process CAN Information
 void PowerAuxCANInterface::handle(ECUPowerAuxCommands *can_struct) {
     // Blinkers and Hazards
-    flashLSignal = can_struct->left_turn_signal;
-    flashRSignal = can_struct->right_turn_signal;
-    hazards = can_struct->hazards;
+    bool flashLSignal = can_struct->left_turn_signal;
+    bool flashRSignal = can_struct->right_turn_signal;
+    bool flashHazards = can_struct->hazards;
 
     // Brake Lights
-    brake_lights = can_struct->brake_lights;
+    bool flashBrakeLights = can_struct->brake_lights;
+
+    signalFlashThread.flags_raise(0x1);
 }
 
 
