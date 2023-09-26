@@ -28,25 +28,36 @@ DigitalOut drl(DRL_EN);
 
 void signalFlashHandler() {
 
-    // Wait until flag has been raised
-    signalFlashThread.flags_wait_all(0x1)
+    while (true){
+        // Change lights based on CAN information    
+        if (flashBMS) {
+            bms_strobe = !bms_strobe
+        } else {
+            bms_strobe = 0
+        }
+        if (flashLSignal) {
+            leftTurnSignal = !leftTurnSignal
+            rightTurnSignal = false;
+        }
+        if (flashRSignal) {
+            rightTurnSignal = !rightTurnSignal;
+            leftTurnSignal = false;
+        }
+        if (flashHazards) {
+            rightTurnSignal = !rightTurnSignal;
+            leftTurnSignal = !leftTurnSignal;
+        }
+        if (flashBrakeLights) {
+            brake_lights = !brake_lights;
+        }
 
-    // Change lights based on CAN information    
-    if (flashLSignal) {
-        leftTurnSignal = !leftTurnSignal;
-        rightTurnSignal = false;
+        //Pause for 500ms
+        ThisThread::sleep_for(FLASH_PERIOD)
+
+        // Wait until flag has been raised
+        signalFlashThread.flags_wait_all(0x1)
     }
-    if (flashRSignal) {
-        rightTurnSignal = !rightTurnSignal;
-        leftTurnSignal = false;
-    }
-    if (flashHazards) {
-        rightTurnSignal = !rightTurnSignal;
-        leftTurnSignal = !leftTurnSignal;
-    }
-    if (flashBrakeLights) {
-        brake_lights = !brake_lights;
-    }
+
 }
 
 AnalogIn fan_tach(FanTach);
